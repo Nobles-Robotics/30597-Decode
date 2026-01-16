@@ -77,6 +77,8 @@ public class StarterBotTeleop extends OpMode {
     // Declare OpMode members.
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
+    private DcMotor frontRightDrive = null;
+    private DcMotor frontLeftDrive = null;
     private DcMotorEx launcher = null;
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
@@ -119,6 +121,7 @@ public class StarterBotTeleop extends OpMode {
     /*
      * Code to run ONCE when the driver hits INIT
      */
+
     @Override
     public void init() {
 
@@ -128,6 +131,8 @@ public class StarterBotTeleop extends OpMode {
          * to 'get' must correspond to the names assigned during the robot configuration
          * step.
          */
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
         leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
@@ -248,16 +253,6 @@ public class StarterBotTeleop extends OpMode {
         telemetry.addData("CurrentIntakeNum", intakeNumber);
 
 
-        /*if (intakeNumber == 0) {
-            intake.setPower(0);
-            leftFeeder.setPower(0);
-            rightFeeder.setPower(0);
-        } else if(intakeNumber == 1) {
-            intake.setPower(1);
-            leftFeeder.setPower(1);
-            rightFeeder.setPower(1);
-
-        }*/
         intake.setPower(-intakeNumber);
         leftFeeder.setPower(-rightFeederPosition);
         rightFeeder.setPower(-rightFeederPosition);
