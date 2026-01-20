@@ -26,18 +26,18 @@ public class Constants {
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
-            .rightFrontMotorName("motor0")
-            .rightRearMotorName("motor1")
-            .leftFrontMotorName("motor2")
-            .leftRearMotorName("motor3")
+            .rightFrontMotorName("front_right_drive")
+            .rightRearMotorName("right_drive")
+            .leftFrontMotorName("front_left_drive")
+            .leftRearMotorName("left_drive")
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE);
 
     public static PinpointConstants localizerConstants = new PinpointConstants() // TODO: tune pinpoint localizers
-            .forwardPodY(-5)
-            .strafePodX(0.5)
+            .forwardPodY(-7.2)
+            .strafePodX(7.5)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
