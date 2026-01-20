@@ -42,6 +42,15 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.pedropathing.follower.Follower;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+import java.util.function.Supplier;
+
+
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -122,9 +131,20 @@ public class StarterBotTeleop extends OpMode {
      * Code to run ONCE when the driver hits INIT
      */
 
+    private Follower follower;
+    public static Pose startingPose = new Pose(0, 0, 90); //See ExampleAuto to understand how to use this
+    private boolean automatedDrive;
+    private Supplier<PathChain> pathChain;
+    private TelemetryManager telemetryM;
+    private boolean slowMode = false;
+    private double slowModeMultiplier = 0.5;
     @Override
     public void init() {
 
+        follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
+        follower.update();
+        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         launchState = LaunchState.IDLE;
         /*
          * Initialize the hardware variables. Note that the strings used here as parameters
@@ -202,6 +222,10 @@ public class StarterBotTeleop extends OpMode {
      */
     @Override
     public void start() {
+        //The parameter controls whether the Follower should use break mode on the motors (using it is recommended).
+        //In order to use float mode, add .useBrakeModeInTeleOp(true); to your Drivetrain Constants in Constant.java (for Mecanum)
+        //If you don't pass anything in, it uses the default (false)
+        follower.startTeleopDrive();
     }
 
     /*x
@@ -218,8 +242,48 @@ public class StarterBotTeleop extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-        arcadeDrive(-gamepad1.left_stick_y, gamepad1.right_stick_x);
-        arcadeDrive(-gamepad2.left_stick_y, gamepad2.right_stick_x);
+        follower.update();
+        telemetryM.update();
+        if (!automatedDrive) {
+            //Make the last parameter false for field-centric
+            //In case the drivers want to use a "slowMode" you can scale the vectors
+            //This is the normal version to use in the TeleOp
+            if (!slowMode) follower.setTeleOpDrive(
+                    -gamepad1.left_stick_y,
+                    -gamepad1.left_stick_x,
+                    -gamepad1.right_stick_x,
+                    true // Robot Centric
+            );
+                //This is how it looks with slowMode on
+            else follower.setTeleOpDrive(
+                    -gamepad1.left_stick_y * slowModeMultiplier,
+                    -gamepad1.left_stick_x * slowModeMultiplier,
+                    -gamepad1.right_stick_x * slowModeMultiplier,
+                    true // Robot Centric
+            );
+        }
+        //Automated PathFollowing
+        if (gamepad1.aWasPressed()) {
+            follower.followPath(pathChain.get());
+            automatedDrive = true;
+        }
+        //Stop automated following if the follower is done
+        if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
+            follower.startTeleopDrive();
+            automatedDrive = false;
+        }
+        //Slow Mode
+        if (gamepad1.rightBumperWasPressed()) {
+            slowMode = !slowMode;
+        }
+        //Optional way to change slow mode strength
+        if (gamepad1.dpad_up) {
+            slowModeMultiplier += 0.25;
+        }
+        //Optional way to change slow mode strength
+        if (gamepad2.dpad_down) {
+            slowModeMultiplier -= 0.25;
+        }
 
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
@@ -269,16 +333,6 @@ public class StarterBotTeleop extends OpMode {
     public void stop() {
     }
 
-     void arcadeDrive(double forward, double rotate) {
-        leftPower = forward + rotate;
-        rightPower = forward - rotate;
-
-        /*
-         * Send calculated power to wheels
-         */
-        leftDrive.setPower(leftPower/2);
-        rightDrive.setPower(rightPower/2);
-    }
 
     void launch(boolean shotRequested) {
         switch (launchState) {
