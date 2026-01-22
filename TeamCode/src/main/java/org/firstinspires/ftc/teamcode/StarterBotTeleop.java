@@ -273,7 +273,7 @@ public class StarterBotTeleop extends OpMode {
             automatedDrive = false;
         }
         //Slow Mode
-        if (gamepad1.rightBumperWasPressed()) {
+        if (gamepad1.leftBumperWasPressed()) {
             slowMode = !slowMode;
         }
         //Optional way to change slow mode strength
