@@ -250,27 +250,27 @@ public class StarterBotTeleop extends OpMode {
             //This is the normal version to use in the TeleOp
             if (!slowMode) follower.setTeleOpDrive(
                     -gamepad1.left_stick_y,
-                    -gamepad1.left_stick_x,
-                    -gamepad1.right_stick_x,
+                    gamepad1.right_stick_x,
+                    gamepad1.left_stick_x,
                     true // Robot Centric
             );
                 //This is how it looks with slowMode on
             else follower.setTeleOpDrive(
                     -gamepad1.left_stick_y * slowModeMultiplier,
-                    -gamepad1.left_stick_x * slowModeMultiplier,
-                    -gamepad1.right_stick_x * slowModeMultiplier,
+                    gamepad1.left_stick_x * slowModeMultiplier,
+                    gamepad1.right_stick_x * slowModeMultiplier,
                     true // Robot Centric
             );
         }
         //Automated PathFollowing
         if (gamepad1.aWasPressed()) {
-            follower.followPath(pathChain.get());
-            automatedDrive = true;
+            //follower.followPath(pathChain.get());
+            //automatedDrive = true;
         }
         //Stop automated following if the follower is done
         if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
-            follower.startTeleopDrive();
-            automatedDrive = false;
+            //follower.startTeleopDrive();
+            //automatedDrive = false;
         }
         //Slow Mode
         if (gamepad1.leftBumperWasPressed()) {
@@ -291,14 +291,15 @@ public class StarterBotTeleop extends OpMode {
          */
         if (gamepad2.y) {
             launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-        } else if (gamepad2.b) { // stop flywheel
+        }
+        if (gamepad2.b) { // stop flywheel
             launcher.setVelocity(STOP_SPEED);
-        } else if (gamepad2.aWasPressed()) {
+        }
+        if (gamepad2.aWasPressed()) {
             intakeNumber += 1;
             intakeNumber = intakeNumber%2;
-//        } else if(gamepad1.a) {
-//            rightFeeder.setPower(rightFeederPosition);
-        } else if(gamepad2.xWasPressed()) {
+        }
+        if(gamepad2.xWasPressed()) {
             rightFeederPosition+=1;
             rightFeederPosition= rightFeederPosition%2;
         }
