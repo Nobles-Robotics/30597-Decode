@@ -41,6 +41,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.pedropathing.follower.Follower;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -91,6 +92,7 @@ public class StarterBotTeleop extends OpMode {
     private DcMotorEx launcher = null;
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
+    private Servo adjustableHood = null;
     double rightFeederPosition;
     int rFeedSpeed = 1;
 
@@ -125,6 +127,8 @@ public class StarterBotTeleop extends OpMode {
     double leftPower;
     double rightPower;
     int intakeNumber = 0;
+    int adjustableHoodPosition = 0;
+    int positions = 3;
     DcMotor intake;
     DcMotor flyWheel;
     /*
@@ -159,6 +163,7 @@ public class StarterBotTeleop extends OpMode {
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
         intake = hardwareMap.get(DcMotor.class, "intake");
+        adjustableHood = hardwareMap.get(Servo.class, "adjustable_hood");
         intake.setZeroPowerBehavior(BRAKE);
 
 
@@ -274,17 +279,25 @@ public class StarterBotTeleop extends OpMode {
         }
         //Slow Mode
         if (gamepad1.leftBumperWasPressed()) {
-            slowMode = !slowMode;
+            //slowMode = !slowMode;
         }
         //Optional way to change slow mode strength
         if (gamepad1.dpad_up) {
-            slowModeMultiplier += 0.25;
+            adjustableHoodPosition += 1;
+            adjustableHoodPosition = adjustableHoodPosition%positions;
         }
         //Optional way to change slow mode strength
         if (gamepad2.dpad_down) {
-            slowModeMultiplier -= 0.25;
+            adjustableHoodPosition -= 1;
+            adjustableHoodPosition = adjustableHoodPosition%positions;
         }
-
+        if (adjustableHoodPosition == 0) {
+            adjustableHood.setPosition(0);
+        } else if (adjustableHoodPosition == 1) {
+            adjustableHood.setPosition(50);
+        } else if (adjustableHoodPosition == 2){
+            adjustableHood.setPosition(100);
+        }
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
