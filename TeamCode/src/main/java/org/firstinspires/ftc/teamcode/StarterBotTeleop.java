@@ -282,7 +282,7 @@ public class StarterBotTeleop extends OpMode {
             //slowMode = !slowMode;
         }
         //Optional way to change slow mode strength
-        if (gamepad1.dpad_up) {
+        if (gamepad2.dpad_up) {
             adjustableHoodPosition += 1;
             adjustableHoodPosition = adjustableHoodPosition%positions;
         }

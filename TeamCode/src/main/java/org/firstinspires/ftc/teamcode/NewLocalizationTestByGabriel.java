@@ -36,8 +36,8 @@ import java.util.List;
  * @version 1.0, 6/26/2025
  */
 @Configurable
-@TeleOp(name = "Tuning", group = "Pedro Pathing")
-public class Tuning extends SelectableOpMode {
+@TeleOp(name = "LocalizationTest", group = "StarterBot")
+public class NewLocalizationTestByGabriel.java extends OpMode {
     public static Follower follower;
 
     @IgnoreConfigurable

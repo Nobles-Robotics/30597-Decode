@@ -24,7 +24,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-public class PedroPathingAuto {
+@Autonomous(name="PedroPathingAuto", group="StarterBot")
+public class PedroPathingAuto extends OpMode{
     private DcMotor intake = null;
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
