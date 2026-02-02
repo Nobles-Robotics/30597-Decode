@@ -255,8 +255,8 @@ public class StarterBotTeleop extends OpMode {
             //This is the normal version to use in the TeleOp
             if (!slowMode) follower.setTeleOpDrive(
                     -gamepad1.left_stick_y,
-                    gamepad1.right_stick_x,
-                    gamepad1.left_stick_x,
+                    -gamepad1.left_stick_x,
+                    -gamepad1.right_stick_x,
                     true // Robot Centric
             );
                 //This is how it looks with slowMode on
