@@ -81,8 +81,8 @@ public class StarterBotTeleop extends OpMode {
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double LAUNCHER_TARGET_VELOCITY = 750;
-    final double LAUNCHER_MIN_VELOCITY = 500;
+    double LAUNCHER_TARGET_VELOCITY = 250;
+    final double LAUNCHER_MIN_VELOCITY = 200;
 
     // Declare OpMode members.
     private DcMotor leftDrive = null;
@@ -255,7 +255,7 @@ public class StarterBotTeleop extends OpMode {
             //This is the normal version to use in the TeleOp
             if (!slowMode) follower.setTeleOpDrive(
                     -gamepad1.left_stick_y,
-                    gamepad1.left_stick_x,
+                    -gamepad1.left_stick_x,
                     -gamepad1.right_stick_x,
                     true // Robot Centric
             );
@@ -295,11 +295,14 @@ public class StarterBotTeleop extends OpMode {
             adjustableHoodPosition = adjustableHoodPosition%positions;
         }
         if (adjustableHoodPosition == 0) {
-            adjustableHood.setPosition(0.35);
+            adjustableHood.setPosition(0.45);
+            LAUNCHER_TARGET_VELOCITY = 150;
         } else if (adjustableHoodPosition == 1) {
-            adjustableHood.setPosition(0.5);
+            adjustableHood.setPosition(0.50);
+            LAUNCHER_TARGET_VELOCITY = 175;
         } else if (adjustableHoodPosition == 2){
-            adjustableHood.setPosition(0.65);
+            adjustableHood.setPosition(0.55);
+            LAUNCHER_TARGET_VELOCITY = 250;
         }
         telemetry.addData("adjustable hood position", adjustableHoodPosition);
         /*
