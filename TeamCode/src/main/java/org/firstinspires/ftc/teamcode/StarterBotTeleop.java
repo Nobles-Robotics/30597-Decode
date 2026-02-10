@@ -81,8 +81,8 @@ public class StarterBotTeleop extends OpMode {
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double LAUNCHER_TARGET_VELOCITY = 1725;
-    final double LAUNCHER_MIN_VELOCITY = 1675;
+    final double LAUNCHER_TARGET_VELOCITY = 750;
+    final double LAUNCHER_MIN_VELOCITY = 500;
 
     // Declare OpMode members.
     private DcMotor leftDrive = null;
@@ -255,7 +255,7 @@ public class StarterBotTeleop extends OpMode {
             //This is the normal version to use in the TeleOp
             if (!slowMode) follower.setTeleOpDrive(
                     -gamepad1.left_stick_y,
-                    -gamepad1.left_stick_x,
+                    gamepad1.left_stick_x,
                     -gamepad1.right_stick_x,
                     true // Robot Centric
             );
@@ -282,22 +282,26 @@ public class StarterBotTeleop extends OpMode {
             //slowMode = !slowMode;
         }
         //Optional way to change slow mode strength
-        if (gamepad2.dpad_up) {
+        if (gamepad2.rightBumperWasPressed()) {
             adjustableHoodPosition += 1;
             adjustableHoodPosition = adjustableHoodPosition%positions;
         }
         //Optional way to change slow mode strength
         if (gamepad2.dpad_down) {
             adjustableHoodPosition -= 1;
+            if (adjustableHoodPosition < 0) {
+                adjustableHoodPosition = 0;
+            }
             adjustableHoodPosition = adjustableHoodPosition%positions;
         }
         if (adjustableHoodPosition == 0) {
-            adjustableHood.setPosition(0);
+            adjustableHood.setPosition(0.35);
         } else if (adjustableHoodPosition == 1) {
-            adjustableHood.setPosition(50);
+            adjustableHood.setPosition(0.5);
         } else if (adjustableHoodPosition == 2){
-            adjustableHood.setPosition(100);
+            adjustableHood.setPosition(0.65);
         }
+        telemetry.addData("adjustable hood position", adjustableHoodPosition);
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
