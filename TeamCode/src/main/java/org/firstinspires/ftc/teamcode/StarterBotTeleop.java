@@ -293,7 +293,7 @@ public class StarterBotTeleop extends OpMode {
             LAUNCHER_TARGET_VELOCITY = 180;
         } else if (adjustableHoodPosition == 1) {
             adjustableHood.setPosition(0.50);
-            LAUNCHER_TARGET_VELOCITY = 200;
+            LAUNCHER_TARGET_VELOCITY = 190;
         } else if (adjustableHoodPosition == 2){
             adjustableHood.setPosition(0.525);
             LAUNCHER_TARGET_VELOCITY = 250;
