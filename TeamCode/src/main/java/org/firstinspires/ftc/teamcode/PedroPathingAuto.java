@@ -26,6 +26,8 @@ import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 @Autonomous(name="PedroPathingAuto", group="StarterBot")
 public class PedroPathingAuto extends OpMode{
+    double timeToWaitAfterShot = 2;
+    boolean alreadyShot = false;
     private DcMotor intake = null;
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
@@ -35,12 +37,14 @@ public class PedroPathingAuto extends OpMode{
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
     private Servo adjustableHood = null;
+    ElapsedTime feederTimer = new ElapsedTime();
+    double LAUNCHER_TARGET_VELOCITY = 200;
     double feederToggle;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private final Pose startPose = new Pose(40, 136, Math.toRadians(180)); // Start Pose of our robot.
-    private final Pose scorePose = new Pose(35, 120, Math.toRadians(137)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose startPose = new Pose(50, 136, Math.toRadians(180)); // Start Pose of our robot.
+    private final Pose scorePose = new Pose(50, 90, Math.toRadians(137)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose pickup1Pose = new Pose(42, 84, Math.toRadians(180)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1_1 = new Pose(35, 84, Math.toRadians(180));
     private final Pose pickup2Pose = new Pose(42, 60, Math.toRadians(180)); // Middle (Second Set) of Artifacts from the Spike Mark.
@@ -48,7 +52,7 @@ public class PedroPathingAuto extends OpMode{
     private final Pose pickup3Pose = new Pose(42, 135, Math.toRadians(180)); // Lowest (Third Set) of Artifacts from the Spike Mark.
     private final Pose pickup3_3 = new Pose(35, 35, Math.toRadians(180));
     private Path scorePreload;
-    private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3;
+    private PathChain grabPickup1, grabPickup1_1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3;
 
     public void buildPaths() {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
@@ -63,7 +67,10 @@ public class PedroPathingAuto extends OpMode{
                 .addPath(new BezierLine(scorePose, pickup1Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
                 .build();
-
+        grabPickup1_1 = follower.pathBuilder()
+                .addPath(new BezierLine(pickup1Pose, pickup1_1))
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup1_1.getHeading())
+                .build();
         /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup1Pose, scorePose))
@@ -98,8 +105,16 @@ public class PedroPathingAuto extends OpMode{
         switch (pathState) {
             case 0:
                 follower.followPath(scorePreload);
-                setPathState(1);
-                break;
+                shoot();
+                if (feederTimer.seconds() > timeToWaitAfterShot) {
+                    rightFeeder.setPower(1);
+                    leftFeeder.setPower(1);
+                    alreadyShot = true;
+                }
+                if (feederTimer.seconds() > timeToWaitAfterShot + 1 && alreadyShot) {
+                    setPathState(1);
+                    break;
+                }
             case 1:
 
             /* You could check for
@@ -111,63 +126,80 @@ public class PedroPathingAuto extends OpMode{
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
                     /* Score Preload */
-
+                    launcher.setVelocity(0);
+                    rightFeeder.setPower(0);
+                    leftFeeder.setPower(0);
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup1,true);
                     setPathState(2);
                 }
                 break;
             case 2:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
                 if(!follower.isBusy()) {
-                    /* Grab Sample */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(scorePickup1,true);
+                    intake.setPower(-1);
+                    follower.followPath(grabPickup1_1, true);
                     setPathState(3);
                 }
                 break;
             case 3:
+                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
+                if(!follower.isBusy()) {
+                    /* Grab Sample */
+                    intake.setPower(0);
+                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
+                    follower.followPath(scorePickup1,true);
+                    shoot();
+                    if (feederTimer.seconds() > timeToWaitAfterShot) {
+                        rightFeeder.setPower(1);
+                        leftFeeder.setPower(1);
+                        alreadyShot = true;
+                    }
+                    if (feederTimer.seconds() > timeToWaitAfterShot + 1 && alreadyShot) {
+                        setPathState(4);
+                        break;
+                    }
+                }
+            case 4:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
                     /* Score Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup2,true);
-                    setPathState(4);
+                    setPathState(5);
                 }
                 break;
-            case 4:
+            case 5:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
                 if(!follower.isBusy()) {
                     /* Grab Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(scorePickup2,true);
-                    setPathState(5);
+                    setPathState(6);
                 }
                 break;
-            case 5:
+            case 6:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
                     /* Score Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup3,true);
-                    setPathState(6);
+                    setPathState(7);
                 }
                 break;
-            case 6:
+            case 7:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
                 if(!follower.isBusy()) {
                     /* Grab Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(scorePickup3, true);
-                    setPathState(7);
+                    setPathState(8);
                 }
                 break;
-            case 7:
+            case 8:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
                     /* Set the state to a Case we won't use or define, so it just stops running an new paths */
@@ -219,6 +251,11 @@ public class PedroPathingAuto extends OpMode{
 
     /** This method is called continuously after Init while waiting for "play". **/
     public void init_loop() {}
+    void shoot() {
+        launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+        feederTimer.reset();
+    }
+
 
     /** This method is called once at the start of the OpMode.
      * It runs all the setup actions, including building paths and starting the path system **/

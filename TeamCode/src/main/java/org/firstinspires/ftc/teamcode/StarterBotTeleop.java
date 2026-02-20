@@ -81,9 +81,10 @@ public class StarterBotTeleop extends OpMode {
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    double LAUNCHER_TARGET_VELOCITY = 250;
+    double LAUNCHER_TARGET_VELOCITY = 100;
     final double LAUNCHER_MIN_VELOCITY = 200;
-
+    boolean flyWheelSpinning;
+    boolean shot;
     // Declare OpMode members.
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
@@ -120,9 +121,8 @@ public class StarterBotTeleop extends OpMode {
         LAUNCH,
         LAUNCHING,
     }
-
     private LaunchState launchState;
-
+    boolean turnOnServos = false;
     // Setup a variable for each drive wheel to save power level for telemetry
     double leftPower;
     double rightPower;
@@ -142,6 +142,7 @@ public class StarterBotTeleop extends OpMode {
     private TelemetryManager telemetryM;
     private boolean slowMode = false;
     private double slowModeMultiplier = 0.5;
+    double flyWheelSpeed;
     @Override
     public void init() {
 
@@ -287,21 +288,14 @@ public class StarterBotTeleop extends OpMode {
             adjustableHoodPosition = adjustableHoodPosition%positions;
         }
         //Optional way to change slow mode strength
-        if (gamepad2.dpad_down) {
-            adjustableHoodPosition -= 1;
-            if (adjustableHoodPosition < 0) {
-                adjustableHoodPosition = 0;
-            }
-            adjustableHoodPosition = adjustableHoodPosition%positions;
-        }
         if (adjustableHoodPosition == 0) {
             adjustableHood.setPosition(0.45);
-            LAUNCHER_TARGET_VELOCITY = 150;
+            LAUNCHER_TARGET_VELOCITY = 180;
         } else if (adjustableHoodPosition == 1) {
             adjustableHood.setPosition(0.50);
-            LAUNCHER_TARGET_VELOCITY = 175;
+            LAUNCHER_TARGET_VELOCITY = 200;
         } else if (adjustableHoodPosition == 2){
-            adjustableHood.setPosition(0.55);
+            adjustableHood.setPosition(0.525);
             LAUNCHER_TARGET_VELOCITY = 250;
         }
         telemetry.addData("adjustable hood position", adjustableHoodPosition);
@@ -310,25 +304,42 @@ public class StarterBotTeleop extends OpMode {
          * queuing a shot.
          */
         if (gamepad2.y) {
-            launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+            shoot();
         }
         if (gamepad2.b) { // stop flywheel
             launcher.setVelocity(STOP_SPEED);
+            flyWheelSpinning = false;
         }
-        if (gamepad2.aWasPressed()) {
-            intakeNumber += 1;
-            intakeNumber = intakeNumber%2;
+        if (gamepad2.a) {
+            intake.setPower(-1);
+        } else if(gamepad2.x) {
+            intake.setPower(1);
+        } else {
+            intake.setPower(0);
         }
-        if(gamepad2.xWasPressed()) {
-            rightFeederPosition+=1;
-            rightFeederPosition= rightFeederPosition%2;
+        if(gamepad2.dpad_up) {
+            rightFeeder.setPower(-1);
+            leftFeeder.setPower(-1);
+        } else if(gamepad2.dpad_down) {
+            leftFeeder.setPower(1);
+            rightFeeder.setPower(1);
+        } else {
+            rightFeeder.setPower(0);
+            leftFeeder.setPower(0);
         }
-
+        if(flyWheelSpinning == true && feederTimer.seconds() > FEED_TIME_SECONDS) {
+            turnOnServos = true;
+        } else {
+            turnOnServos = false;
+        }
+        if(turnOnServos == true) {
+            rightFeederPosition = 1;
+        } else {
+            rightFeederPosition = 0;
+        }
         /*
          * Now we call our "Launch" function.
          */
-        launch(gamepad1.rightBumperWasPressed());
-
         /*
          * Show the state and motor powers
          */
@@ -337,14 +348,16 @@ public class StarterBotTeleop extends OpMode {
         telemetry.addData("motorSpeed", launcher.getVelocity());
         telemetry.addData("CurrentIntakeNum", intakeNumber);
 
-
-        intake.setPower(-intakeNumber);
-        leftFeeder.setPower(-rightFeederPosition);
-        rightFeeder.setPower(-rightFeederPosition);
         telemetry.addData("Intake Power", intake.getPower());
         telemetry.addData("leftFeeder Power", leftFeeder.getPower());
         telemetry.addData("rightFeeder Power", rightFeeder.getPower());
-
+        if(rightFeederPosition == 1) {
+            leftFeeder.setPower(-1);
+            rightFeeder.setPower(-1);
+        } else if(rightFeederPosition == 0){
+            leftFeeder.setPower(0);
+            rightFeeder.setPower(0);
+        }
     }
 
     /*
@@ -354,7 +367,11 @@ public class StarterBotTeleop extends OpMode {
     public void stop() {
     }
 
-
+    void shoot() {
+        launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+        feederTimer.reset();
+        flyWheelSpinning = true;
+    }
     void launch(boolean shotRequested) {
         switch (launchState) {
             case IDLE:

@@ -22,16 +22,10 @@ public class Constants {
             .mass(5)
             .forwardZeroPowerAcceleration(-38.653)
             .lateralZeroPowerAcceleration(-59.32)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0.015))
-            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0, 0))
-            .useSecondaryTranslationalPIDF(true)
-            .headingPIDFCoefficients(new PIDFCoefficients(3, 0, 0.1, 0.04))
-            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.1, 0))
-            .useSecondaryHeadingPIDF(true)
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.06, 0.01, 0.000001, 0.6, 0.01))
-            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.06, 0, 0.000005, 0.6, 0.01))
-            .useSecondaryDrivePIDF(true)
-            .centripetalScaling(0.00015);
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0.0, 0.01, 0.025))
+            .headingPIDFCoefficients(new PIDFCoefficients(1.2, 0, 0.05, 0.025))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.1, 0.00001, 0.01, 0.0, 0.01))
+            .centripetalScaling(0.0015);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
